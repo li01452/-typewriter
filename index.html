@@ -28,10 +28,7 @@
             padding: 0;
             zoom: 1;
             color: #333;
-            -webkit-border-radius: 10px;
-            -moz-border-radius: 10px;
-            -o-border-radius: 10px;
-            -khtml-border-radius: 10px;
+            border-radius: 10px;
             background: #fff;
             border: 1px solid;
             border-color: #e5e5e5 #dbdbdb #d2d2d2;
@@ -69,14 +66,14 @@
     </style>
 </head>
 
-<body onclick="init()">
+<body>
     <div id="main">
-        <div id="content">
+        <div id="content" onclick="init()">
             <p class="pulse">单击鼠标开始输入</p>
         </div>
-        <div id="rs">
+        <div id="rs" onclick="lastSound.play()">
         </div>
-        <div id="error">
+        <div id="error" onclick="hide()">
         </div>
     </div>
 </body>
@@ -96,6 +93,8 @@
     var rsDiv = document.getElementById("rs");//释义区域
     var contentDiv = document.getElementById("content");//主体单词区域
     var wordSound//单词声音
+    var isHide = false;
+    var lastSound
 
     function init() {
         str = " ";
@@ -104,7 +103,7 @@
         wordCount = 0;
         rate = 1;
         while (str.length < 300) { //生成单词长度控制
-            var temp = Math.ceil(Math.random() * 50) + 100;//随机数+下限
+            var temp = Math.ceil(Math.random() * 50) + 300;//随机数+下限
             str += word[temp] + " ";
             pastr.push(paraphrase[temp]);
             selectedWords.push(word[temp]);
@@ -120,6 +119,7 @@
     document.onkeydown = function (event) { //按键触发
         var e = event || window.event || arguments.callee.caller.arguments[0];
         if (e.keyCode >= 32 && e.keyCode <= 127) {
+            if (str == undefined) init();
             if (rate == str.length) { //完成输入，开始下一局
                 init();
             }
@@ -165,11 +165,20 @@
         }
     }
     function loadSound() {
+        lastSound = wordSound;
         wordSound = new Audio("https://dict.youdao.com/dictvoice?type=0&audio=" + selectedWords[wordCount + 1]); //单词声音预加载
         wordSound.load();
     }
     function chanegeRs() {
         rsDiv.innerHTML = pastr[wordCount];
+    }
+    function hide() {
+        if (!isHide) {
+            contentDiv.style.color = "white";
+        } else {
+            contentDiv.style.color = "black";
+        }
+        isHide = !isHide;
     }
 </script>
 
