@@ -64,10 +64,9 @@
         .pulse {
             animation: pulse 1s cubic-bezier(.4, 0, .6, 1) infinite;
             text-align: center;
-            margin: 300px;
+            margin: 250px 0;
         }
     </style>
-
 </head>
 
 <body onclick="init()">
@@ -118,7 +117,6 @@
         seconds = 0; //记录用时
         errorstr = "";
     }
-
     document.onkeydown = function (event) { //按键触发
         var e = event || window.event || arguments.callee.caller.arguments[0];
         if (e.keyCode >= 32 && e.keyCode <= 127) {
@@ -155,7 +153,6 @@
             contentDiv.innerHTML = "下面是统计的按键错误情况 ";
         }
     }
-
     function chanegeMain() {
         contentDiv.innerHTML = "<span>" + str.substr(1, rate - 1) + "</span>" + str.substr(rate); //变色语句
         if (rate == str.length - 1) { //输入完成
@@ -167,7 +164,6 @@
             document.cookie = "errorKeys=" + errorstr + document.cookie.substr(10, 99999) + "; expires=Fri, 23 May 2222 00:00:00 GMT"; //错误保存到cookies
         }
     }
-
     function loadSound() {
         wordSound = new Audio("https://dict.youdao.com/dictvoice?type=0&audio=" + selectedWords[wordCount + 1]); //单词声音预加载
         wordSound.load();
