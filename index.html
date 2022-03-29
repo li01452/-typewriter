@@ -59,9 +59,9 @@
         }
 
         .pulse {
-            animation: pulse 1s cubic-bezier(.4, 0, .6, 1) infinite;
+            animation: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
             text-align: center;
-            margin: 250px 0;
+            padding: 250px 0;
         }
     </style>
 </head>
@@ -69,9 +69,10 @@
 <body>
     <div id="main">
         <div id="content" onclick="init()">
-            <p class="pulse">单击鼠标开始输入</p>
+            <p class="pulse">点击此处开始输入</p>
         </div>
         <div id="rs" onclick="lastSound.play()">
+            <p>点击发音</p>
         </div>
         <div id="error" onclick="hide()">
         </div>
