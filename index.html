@@ -54,7 +54,7 @@
 
         @keyframes pulse {
             50% {
-                opacity: .5
+                opacity: .5;
             }
         }
 
@@ -103,11 +103,15 @@
         selectedWords = new Array;
         wordCount = 0;
         rate = 1;
-        while (str.length < 300) { //生成单词长度控制
-            var temp = Math.ceil(Math.random() * 50) + 300;//随机数+下限
+        while (str.length < 400) { //生成单词长度控制
+            var temp = Math.ceil(Math.random() * 100) + 50;//随机数+下限
+            if (temp == recur) {
+                temp++ //避免连续相同词
+            }
             str += word[temp] + " ";
             pastr.push(paraphrase[temp]);
             selectedWords.push(word[temp]);
+            var recur = temp;
         }
         wordSound = new Audio("https://dict.youdao.com/dictvoice?type=0&audio=" + selectedWords[0]);
         wordSound.play();
