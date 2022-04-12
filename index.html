@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -52,6 +53,10 @@
             font-size: 34px;
         }
 
+        #info {
+            text-align: center;
+        }
+
         @keyframes pulse {
             50% {
                 opacity: .5;
@@ -74,7 +79,9 @@
         <div id="rs" onclick="lastSound.play()">
             <p>点击发音</p>
         </div>
-        <div id="error" onclick="hide()">
+        <div id="error">
+        </div>
+        <div id="info">
         </div>
     </div>
 </body>
@@ -93,9 +100,13 @@
     var errorDiv = document.getElementById("error");//错误区域
     var rsDiv = document.getElementById("rs");//释义区域
     var contentDiv = document.getElementById("content");//主体单词区域
+    var infoDiv = document.getElementById("info");//主体单词区域
     var wordSound//单词声音
-    var isHide = false;
-    var lastSound
+    var isHide = false;//是否隐藏单词
+    var lastSound//当前单词声音
+    var correctWords = JSON.parse(localStorage.getItem("correctWords"))//正确单词记录
+    var isCorrectWord = true;//单词输入是否错误
+
 
     function init() {
         str = " ";
@@ -103,15 +114,18 @@
         selectedWords = new Array;
         wordCount = 0;
         rate = 1;
-        while (str.length < 400) { //生成单词长度控制
+        if (correctWords === null) correctWords = {};
+        while (str.length < 100) { //生成单词长度控制
             var temp = Math.ceil(Math.random() * 100) + 50;//随机数+下限
-            if (temp == recur) {
+            if (temp === recur) {
                 temp++ //避免连续相同词
             }
-            str += word[temp] + " ";
-            pastr.push(paraphrase[temp]);
-            selectedWords.push(word[temp]);
-            var recur = temp;
+            if (!(correctWords[word[temp]] > 2)) {
+                str += word[temp] + " ";
+                pastr.push(paraphrase[temp]);
+                selectedWords.push(word[temp]);
+                var recur = temp;
+            }
         }
         wordSound = new Audio("https://dict.youdao.com/dictvoice?type=0&audio=" + selectedWords[0]);
         wordSound.play();
@@ -119,54 +133,60 @@
         chanegeMain();
         chanegeRs();
         seconds = 0; //记录用时
-        errorstr = "";
     }
+
     document.onkeydown = function (event) { //按键触发
         var e = event || window.event || arguments.callee.caller.arguments[0];
-        if (e.keyCode >= 32 && e.keyCode <= 127) {
-            if (str == undefined) init();
-            if (rate == str.length) { //完成输入，开始下一局
-                init();
-            }
-            if (str.charAt(rate).toUpperCase() == String.fromCharCode(e.keyCode)) { //按键与录入的一致
+        if (str === undefined) init();
+        if (e.keyCode === 13) infoDiv.innerHTML = selectedWords[wordCount];//按下回车显示单词
+        if (e.keyCode === 220) lastSound.play();//按下\发音
+        if (e.keyCode === 27) hide();//隐藏单词
+        if (e.keyCode >= 32 && e.keyCode <= 90) {
+            if (str.charAt(rate).toUpperCase() === String.fromCharCode(e.keyCode)) { //按键与录入的一致
                 rate++;
                 errorDiv.innerHTML = "";
                 chanegeMain();
-                //if (e.keyCode == 32) { 按下空格键
-                if (str[rate] == " ") { //单词结束
+                //if (e.keyCode === 32) { 按下空格键
+                if (str[rate] === " ") { //单词结束
+                    if (isCorrectWord & isHide) { //单词正确,主体隐藏
+                        var tempWord = selectedWords[wordCount];
+                        if (correctWords[tempWord] == undefined) {
+                            correctWords[tempWord] = 1;
+                        } else {
+                            correctWords[tempWord]++;
+                        }
+                        console.log(tempWord, correctWords[tempWord]);
+                    }
                     wordCount++;
                     wordSound.play();
                     loadSound()
                     chanegeRs();
+                    isCorrectWord = true;
+                }
+                console.log(rate, str.length);
+                if (rate === str.length) { //完成输入，开始下一局
+                    localStorage.setItem("correctWords", JSON.stringify(correctWords));
+                    init();
                 }
             } else { //错误按键
+                isCorrectWord = false;
                 errorstr += str.charAt(rate);
-                errorDiv.innerHTML = "按键错误";
+                errorDiv.innerHTML = "按键错误" + String.fromCharCode(e.keyCode);
                 var beepSound = new Audio(beep);
                 beepSound.play();
             }
-        } else if (e.keyCode == 27) { //显示错误
-            var errorCount = {};
-            document.cookie.substr(10, 99999).replace(/(\w{1})/g, function ($1) {
-                errorCount[$1] ? errorCount[$1] += 1 : errorCount[$1] = 1;
-            })
-            var ret = '';
-            for (var i in errorCount) {
-                ret += i + ':' + errorCount[i] + " ";
-            }
-            rsDiv.innerHTML = ret;
-            contentDiv.innerHTML = "下面是统计的按键错误情况 ";
         }
     }
+
     function chanegeMain() {
         contentDiv.innerHTML = "<span>" + str.substr(1, rate - 1) + "</span>" + str.substr(rate); //变色语句
-        if (rate == str.length - 1) { //输入完成
+        if (rate === str.length - 1) { //输入完成
             rate++;
             if (errorstr.length) {
                 errorDiv.innerHTML = "本次录入:" + errorstr + "时发生错误";
             }
-            rsDiv.innerHTML = "恭喜完成,共输入" + str.length + "个字符！用时:" + seconds + "秒，错误按键" + errorstr.length + "次,按任意键重新开始。";
-            document.cookie = "errorKeys=" + errorstr + document.cookie.substr(10, 99999) + "; expires=Fri, 23 May 2222 00:00:00 GMT"; //错误保存到cookies
+            rsDiv.innerHTML = "输入完成,共输入" + str.length + "个字符！用时:" + seconds + "秒，错误按键" + errorstr.length + "次,按任意键重新开始。";
+            localStorage.setItem("errorKey", errorstr);
         }
     }
     function loadSound() {
@@ -178,10 +198,10 @@
         rsDiv.innerHTML = pastr[wordCount];
     }
     function hide() {
-        if (!isHide) {
-            contentDiv.style.color = "white";
-        } else {
+        if (isHide) {
             contentDiv.style.color = "black";
+        } else {
+            contentDiv.style.color = "white";
         }
         isHide = !isHide;
     }
